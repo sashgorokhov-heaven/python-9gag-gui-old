@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="Icons">
+        <file>error-icon.png</file>
+        <file>rotating.gif</file>
+        <file>preloader.gif</file>
+        <file>icon.png</file>
+        <file>9gag-icon.png</file>
+    </qresource>
+</RCC>
