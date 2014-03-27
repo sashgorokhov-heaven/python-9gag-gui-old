@@ -1,6 +1,6 @@
 __author__ = 'Alexander'
 from resourses.feedListItem import GroupBoxProto
-from PyQt4 import QtGui, QtCore, Qt
+from PyQt4 import QtGui, QtCore
 from os import sep
 
 

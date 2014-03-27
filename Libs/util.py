@@ -1,15 +1,15 @@
 import os
 import threading
 import urllib
-from Resourses.feedListItem import feedListItem
+from resourses.feedListItem import feedListItem
 
 __author__ = 'Alexander'
 from PyQt4 import QtGui, QtCore
-from Libs.asthread import AsThread
+from libs.gorokhovlibs.threading import threaded
 import time
-from Libs.gagapi import Gag_api
+from libs.gagapi import Gag_api
 
-from Resourses import resourcefile
+from resourses import resourcefile
 
 
 class GagLabel(QtGui.QLabel):
@@ -41,7 +41,7 @@ class GagLabel(QtGui.QLabel):
         self.setMovie(self.movieGif)
         self.movieGif.start()
 
-    #@AsThread
+    #@threaded
     #def hide(self):
     #    if self.hiding: return
     #    self.hiding = True
@@ -135,7 +135,7 @@ class GagFeed:
             self.parent.elements.feedList.setItemWidget(item, myItem)
             self.loadQueque.append(myItem)
 
-    @AsThread
+    @threaded
     def getFeed(self, section="hot", nid=None):
         self.parent.elements.nextButton.setEnabled(False)
         self.loading = True
@@ -179,7 +179,7 @@ class GagFeed:
 
         self.parent.elements.gagLabel.setState('normal')
 
-    @AsThread
+    @threaded
     def loadImages(self):
         while not self.complete:
             time.sleep(0.2)
@@ -202,7 +202,8 @@ class GagFeed:
                     continue
                 item.emit(QtCore.SIGNAL("setImage(QString)"), imagePath)
         self.loadQueque.clear()
-        self.parent.elements.nextButton.setEnabled(True)
+        if self.parent.elements.countLabel.checkedItems > 0:
+            self.parent.elements.nextButton.setEnabled(True)
         self.loading = False
 
     def getFileType(self, path):

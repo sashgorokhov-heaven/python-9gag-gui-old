@@ -1,22 +1,18 @@
 __author__ = 'Alexander'
-from PyQt4 import QtCore, QtGui
+from PyQt4 import QtCore
 from os import sep
-import threading, urllib, time, os
 
-from gag import GROUP_ID, showmessage
-from Libs import vkpost
-from Libs.qt import qtwindowproto
-from Libs.vk.api import VKApi
-from Libs.util import GagLabel, CountLabel, GagFeed
-from Libs.asthread import AsThread
-
-from Resourses import resourcefile
-from Resourses.editListItem import editListItem
+from libs import vkpost, constants
+from libs.gorokhovlibs.vk.api import VKApi
+from libs.gorokhovlibs.qt.qtwindow import BaseQtWindow
+from libs.gorokhovlibs.threading import threaded
+from libs.util import GagLabel, CountLabel, GagFeed, showmessage
+from resourses.editListItem import editListItem
 
 
-class MainForm(qtwindowproto.WindowProto):
+class MainForm(BaseQtWindow):
     def __init__(self, access_token):
-        super().__init__(self, 'Resourses' + sep + 'MainForm.ui')
+        super().__init__(self, 'resourses' + sep + 'MainForm.ui')
         self.exiting = False
         self.mode = "feed"
         self.setupGUI()
@@ -52,7 +48,7 @@ class MainForm(qtwindowproto.WindowProto):
             QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical  {
                 background: none;
             }
-        """);
+        """)
         self.elements.feedList.lower()
 
     def _set_connections(self):
@@ -61,16 +57,15 @@ class MainForm(qtwindowproto.WindowProto):
         self.elements.nextButton.clicked.connect(self.nextButtonClicked)
 
     def vk_post(self, label, link, imagePath, item):
-        aid = vkpost.get_album(self.api, GROUP_ID)
+        aid = vkpost.get_album(self.api, constants.groups['ru9gag'])
         post_type = self.get_post_type(item)
         if post_type == 'wall delay':
             delay = item.elements.dateTimeEdit.dateTime().toTime_t()
-            vkpost.wall_post_later(self.api, GROUP_ID, label, link, imagePath, delay)
-            return
-        if post_type == 'wall now':
-            vkpost.wall_post_now(self.api, GROUP_ID, label, link, imagePath)
-            return
-        vkpost.album_post(self.api, GROUP_ID, aid, label, link, imagePath)
+            vkpost.wall_post_later(self.api, constants.groups['ru9gag'], label, link, imagePath, delay)
+        elif post_type == 'wall now':
+            vkpost.wall_post_now(self.api, constants.groups['ru9gag'], label, link, imagePath)
+        else:
+            vkpost.album_post(self.api, constants.groups['ru9gag'], aid, label, link, imagePath)
 
     def get_post_type(self, item):
         if item.elements.directWallRB.isChecked():
@@ -79,7 +74,7 @@ class MainForm(qtwindowproto.WindowProto):
             return "wall now"
         return "album"
 
-    @AsThread
+    @threaded
     def post(self):
         for n, item in enumerate(self.iterateFeedWidgets()):
             if self.exiting:

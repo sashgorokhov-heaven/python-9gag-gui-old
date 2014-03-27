@@ -42,5 +42,5 @@ class VKApi:
             return urllib.request.urlretrieve(link)[0]
 
     def upload(self, link, filename, res_type):
-        response = requests.post(link, files={"res_type": open(filename, 'rb')}).json()
+        response = requests.post(link, files={res_type: open(filename, 'rb')}).json()
         return response

@@ -6,7 +6,7 @@ import http.cookiejar, urllib.request, urllib.parse, html.parser
 class VKAuthError(Exception): pass
 
 
-class __FormParser(html.parser.HTMLParser):
+class _FormParser(html.parser.HTMLParser):
     def __init__(self):
         html.parser.HTMLParser.__init__(self)
         self.url = None
@@ -68,7 +68,7 @@ class VKAuth:
             raise VKAuthError('Unhandled exception: ' + str(e))
 
         doc = response.read().decode()
-        parser = __FormParser()
+        parser = _FormParser()
         parser.feed(doc)
         parser.close()
 

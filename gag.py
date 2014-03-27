@@ -13,8 +13,8 @@ except ImportError:
     print("Module 'PyQt4' is not found")
     exit(-1)
 
-login = "89632753929"
-password = "Mania4203"
+login = ""
+password = ""
 
 access_token = user_id = None
 
