@@ -112,9 +112,10 @@ class VKAuth:
 
         self.token = answer['access_token']
         self.user_id = answer['user_id']
+        self.expires = answer['expires_in']
 
     def _give_access(self, doc):
-        parser = __FormParser()
+        parser = _FormParser()
         parser.feed(str(doc))
         parser.close()
         if not parser.form_parsed or parser.url is None:
@@ -129,7 +130,7 @@ class VKAuth:
         """\
             Returns tuple(access token, user id)\
         """
-        return self.token, self.user_id
+        return self.token, self.user_id, self.expires
 
 
 if __name__ == '__main__':
@@ -138,4 +139,4 @@ if __name__ == '__main__':
     app_id = input('Application id:')
     print('Authorising...')
     vk = VKAuth(email, password, app_id, ['friends', 'photos'])
-    print('Token: {0}\nUser id:{1}'.format(*vk.result()))
+    print('Token: {0}\nUser id:{1}\nExpires in:{3}'.format(*vk.result()))
