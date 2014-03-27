@@ -1,1 +1,0 @@
-C:\Python33_x86\Lib\site-packages\PyQt4\pyrcc4.exe -py3 res.qrc > resourcefile.py
