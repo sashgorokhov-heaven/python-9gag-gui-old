@@ -124,16 +124,17 @@ class GagFeed:
         self.complete = False
         self.loading = False
         self.addingLock = threading.Lock()
-
+        self.news = dict()  # id
         self.loadQueque = list()
 
-    def add_item(self, caption, imageLink, votes, link):
+    def addItem(self, nid):
         with self.addingLock:
-            item = QtGui.QListWidgetItem();
-            myItem = feedListItem(caption, imageLink, votes, link, item, self.parent)
+            item = QtGui.QListWidgetItem()
+            myItem = feedListItem(nid, self.news[nid], item, self.parent)
             self.parent.elements.feedList.addItem(item)
             self.parent.elements.feedList.setItemWidget(item, myItem)
-            self.loadQueque.append(myItem)
+            if 'path' not in self.news[nid]:
+                self.loadQueque.append(nid)
 
     @threaded
     def getFeed(self, section="hot", nid=None):
@@ -165,12 +166,16 @@ class GagFeed:
             gagfeed = gagfeed["data"]
             self.complete = False
             self.loadImages()
-            for news in gagfeed:
+            for newsitem in gagfeed:
                 if self.parent.exiting:
                     return
-                self.parent.emit(QtCore.SIGNAL("add_item(QString, QString, int, QString)"),
-                                 news["caption"], news["images"]["large"],
-                                 news["votes"]["count"], news["link"])
+                if str(newsitem['id']) not in self.news:
+                    self.news[str(newsitem['id'])] = {'caption': newsitem["caption"],
+                                                      'votes': str(newsitem["votes"]["count"]),
+                                                      'link': newsitem['link'],
+                                                      'image': newsitem["images"]["large"],
+                                                      'posted': False}
+                self.parent.emit(QtCore.SIGNAL("addItem(QString)"), str(newsitem['id']))
                 self.addingLock.acquire()
                 self.addingLock.release()
             self.complete = True
@@ -184,23 +189,25 @@ class GagFeed:
         while not self.complete:
             time.sleep(0.2)
             while len(self.loadQueque) > 0:
-                item = self.loadQueque.pop(0)
+                nid = self.loadQueque.pop(0)
                 imagePath = None
                 for i in range(2):
                     if self.parent.exiting:
                         return
                     try:
-                        imagePath = self.api.download(item.imageLink)
+                        imagePath = self.api.download(self.news[nid]['image'])
                         os.rename(imagePath, imagePath + '.' + self.getFileType(imagePath))
                         #print('{} is {}'.format(item.caption, self.getFileType(imagePath)))
                         imagePath += '.' + self.getFileType(imagePath)
                     except Exception as e:
+                        print('Error while loading image for caption "{}" {} time'.format(self.news[nid]['caption'], i))
                         continue
                     else:
                         break
                 if not imagePath:
                     continue
-                item.emit(QtCore.SIGNAL("setImage(QString)"), imagePath)
+                self.news[nid]['path'] = imagePath
+                self.news[nid]['widget'].emit(QtCore.SIGNAL("setImage()"))
         self.loadQueque.clear()
         if self.parent.elements.countLabel.checkedItems > 0:
             self.parent.elements.nextButton.setEnabled(True)

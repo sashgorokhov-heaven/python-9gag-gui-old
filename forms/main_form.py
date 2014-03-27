@@ -18,7 +18,7 @@ class MainForm(BaseQtWindow):
         self.setupGUI()
         self.api = VKApi(access_token)
         self.feed = GagFeed(self)
-        self.connect(self, QtCore.SIGNAL("add_item(QString, QString, int, QString)"), self.feed.add_item)
+        self.connect(self, QtCore.SIGNAL("addItem(QString)"), self.feed.addItem)
         self.feed.getFeed()
 
     def setupGUI(self):
@@ -56,24 +56,6 @@ class MainForm(BaseQtWindow):
         self.elements.feedList.verticalScrollBar().valueChanged.connect(self.handle_scrollBarValue)
         self.elements.nextButton.clicked.connect(self.nextButtonClicked)
 
-    def vk_post(self, label, link, imagePath, item):
-        aid = vkpost.get_album(self.api, constants.groups['ru9gag'])
-        post_type = self.get_post_type(item)
-        if post_type == 'wall delay':
-            delay = item.elements.dateTimeEdit.dateTime().toTime_t()
-            vkpost.wall_post_later(self.api, constants.groups['ru9gag'], label, link, imagePath, delay)
-        elif post_type == 'wall now':
-            vkpost.wall_post_now(self.api, constants.groups['ru9gag'], label, link, imagePath)
-        else:
-            vkpost.album_post(self.api, constants.groups['ru9gag'], aid, label, link, imagePath)
-
-    def get_post_type(self, item):
-        if item.elements.directWallRB.isChecked():
-            if item.elements.waitUntilCheckBox.isChecked():
-                return "wall delay"
-            return "wall now"
-        return "album"
-
     @threaded
     def post(self):
         for n, item in enumerate(self.iterateFeedWidgets()):
@@ -81,7 +63,7 @@ class MainForm(BaseQtWindow):
                 return
             self.emit(QtCore.SIGNAL("setStyleSheet(QString, int)"), "background-color: rgb(148, 205, 255)", n)
             try:
-                self.vk_post(item.caption, item.link, item.imagePath, item)
+                vkpost.post(self.api, self.feed.news[item.id])
             except Exception as e:
                 showmessage('Error while posting: ' + str(e))
                 self.emit(QtCore.SIGNAL("setStyleSheet(QString, int)"), "background-color: rgb(255, 117, 112)", n)
@@ -113,7 +95,7 @@ class MainForm(BaseQtWindow):
             if not itemWidget.checked():
                 self.elements.feedList.takeItem(i)
                 continue
-            myItem = editListItem(itemWidget.caption, itemWidget.imagePath, itemWidget.link, item, self)
+            myItem = editListItem(itemWidget.id, item, self)
             self.elements.feedList.setItemWidget(item, myItem)
             i += 1
 

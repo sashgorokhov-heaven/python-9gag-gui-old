@@ -5,17 +5,17 @@ from os import sep
 
 
 class editListItem(GroupBoxProto):
-    def __init__(self, caption, imagePath, link, holdingItem, window):
+    def __init__(self, nid, parentItem, parent):
         super().__init__(self, "resourses" + sep + "editListItem.ui")
-        self.caption = ""
-        self.setCaption(caption)
-        self.window = window
-        self.link = link
+        self.id = nid
+        self.news = parent.feed.news[nid]
+        self.news['editwidget'] = self
+        self.setCaption(self.news['caption'])
+        self.parent = parent
         self.posttime = None
-        self.imagePath = imagePath
-        self.holdingItem = holdingItem
-        self.holdingItem.setSizeHint(self.sizeHint())
-        self.setImage(self.imagePath)
+        self.parentItem = parentItem
+        self.parentItem.setSizeHint(self.sizeHint())
+        self.setImage(self.news['path'])
         self.elements.dateTimeEdit.setTime(QtCore.QTime.currentTime())
         self.elements.dateTimeEdit.setDate(QtCore.QDate.currentDate())
 
@@ -40,15 +40,14 @@ class editListItem(GroupBoxProto):
 
     def setCaption(self, caption):
         self.elements.captionLabel.setText(str(caption))
-        self.caption = caption
 
     def setImage(self, imagePath):
         self.elements.imageLabel.setText("")
         width = 400
         pixmap = QtGui.QPixmap(imagePath).scaledToWidth(width)
         self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
-        self.elements.imageLabel.setPixmap(pixmap.scaledToWidth(width))
-        self.holdingItem.setSizeHint(self.sizeHint())
+        self.elements.imageLabel.setPixmap(pixmap)
+        self.parentItem.setSizeHint(self.sizeHint())
 
     def checked(self):
         return self.elements.checkBox.isChecked()

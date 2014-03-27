@@ -1,6 +1,27 @@
 __author__ = 'Alexander'
 
 import os, requests
+from libs import constants
+
+
+def post(api, newsitem):
+    aid = get_album(api, constants.groups['ru9gag'])
+    post_type = get_post_type(newsitem['editwidget'])
+    if post_type == 'wall delay':
+        delay = newsitem['widget'].elements.dateTimeEdit.dateTime().toTime_t()
+        wall_post_later(api, constants.groups['ru9gag'], newsitem['caption'], newsitem['link'], newsitem['path'], delay)
+    elif post_type == 'wall now':
+        wall_post_now(api, constants.groups['ru9gag'], newsitem['caption'], newsitem['link'], newsitem['path'])
+    else:
+        album_post(api, constants.groups['ru9gag'], aid, newsitem['caption'], newsitem['link'], newsitem['path'])
+
+
+def get_post_type(item):
+    if item.elements.directWallRB.isChecked():
+        if item.elements.waitUntilCheckBox.isChecked():
+            return "wall delay"
+        return "wall now"
+    return "album"
 
 
 def upload_image(api, gid, mode, imagePath):

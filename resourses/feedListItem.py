@@ -32,22 +32,26 @@ class GroupBoxProto(QtGui.QGroupBox):
 
 
 class feedListItem(GroupBoxProto):
-    def __init__(self, caption, imageLink, votes, link, holdingItem, window):
+    def __init__(self, id, news, parentitem, parent):
         super().__init__(self, "resourses" + sep + "feedListItem.ui")
-        self.setCaption(caption)
-        self.setVotes(votes)
-        self.setLink(link)
+        self.id = id
+        self.news = news
+        self.setCaption(news['caption'])
+        self.setVotes(news['votes'])
+        self.setLink(news['link'])
         self.imageLoaded = False
-        self.window = window
-        self.imageLink = imageLink
-        self.imagePath = ""
-        self.holdingItem = holdingItem
-        self.holdingItem.setSizeHint(self.sizeHint())
+        self.parent = parent
+        self.parentItem = parentitem
+        self.news['widget'] = self
+        self.news['item'] = parentitem
         self.elements.imageLabel.movie = QtGui.QMovie(":/Icons/preloader.gif")
-        self.setLoading()
+        if 'path' not in news:
+            self.setLoading()
+        else:
+            self.setImage()
 
     def _set_connections(self):
-        self.connect(self, QtCore.SIGNAL("setImage(QString)"), self.setImage)
+        self.connect(self, QtCore.SIGNAL("setImage()"), self.setImage)
         self.connect(self, QtCore.SIGNAL("setLoading()"), self.setLoading)
         self.connect(self, QtCore.SIGNAL("setError()"), self.setError)
         self.elements.checkBox.stateChanged.connect(self.setChecked)
@@ -56,16 +60,15 @@ class feedListItem(GroupBoxProto):
 
     def setCaption(self, caption):
         self.elements.captionLabel.setText(str(caption))
-        self.caption = caption
 
     def setChecked(self, checkState):
         if not self.imageLoaded: return
         if checkState == 2:
             self.setStyleSheet("background-color: rgb(161, 255, 144);")
-            self.window.elements.countLabel.inc()
+            self.parent.elements.countLabel.inc()
         else:
             self.setStyleSheet("")
-            self.window.elements.countLabel.dec()
+            self.parent.elements.countLabel.dec()
 
     def mouseDoubleClickEvent(self, event):
         if not self.imageLoaded: return
@@ -76,21 +79,19 @@ class feedListItem(GroupBoxProto):
 
     def imageDoubleClicked(self, event):
         if self.imageLoaded:
-            os.startfile(self.imagePath)
+            os.startfile(self.news['path'])
 
     def linkDoubleClicked(self, event):
         os.startfile(self.elements.linkLabel.text())
 
-    def setImage(self, imagePath):
+    def setImage(self):
         self.elements.imageLabel.movie.stop()
         self.elements.imageLabel.setText("")
         width = 400 #self.elements.imageLabel.width()
-        pixmap = QtGui.QPixmap(imagePath).scaledToWidth(width)
+        pixmap = QtGui.QPixmap(self.news['path']).scaledToWidth(width)
         self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
-        self.elements.imageLabel.setPixmap(pixmap.scaledToWidth(width))
-        self.imagePath = imagePath
-        self.elements.imageLabel.setText("")
-        self.holdingItem.setSizeHint(self.sizeHint())
+        self.elements.imageLabel.setPixmap(pixmap)
+        self.parentItem.setSizeHint(self.sizeHint())
         self.imageLoaded = True
 
     def setLoading(self):
@@ -106,7 +107,6 @@ class feedListItem(GroupBoxProto):
 
     def setLink(self, link):
         self.elements.linkLabel.setText(str(link))
-        self.link = link
 
     def checked(self):
         return self.elements.checkBox.isChecked()
