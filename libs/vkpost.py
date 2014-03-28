@@ -1,6 +1,6 @@
 __author__ = 'Alexander'
 
-import os, requests
+import requests
 from libs import constants
 
 
@@ -26,8 +26,6 @@ def get_post_type(item):
 
 def upload_image(api, gid, mode, imagePath):
     link = api.call('photos.' + mode[0], group_id=gid)['upload_url']
-    os.rename(imagePath, imagePath + '.jpg')
-    imagePath += '.jpg'
     response = api.upload(link, imagePath, 'photo')
     return api.call('photos.' + mode[1],
                     server=response['server'],
@@ -51,8 +49,6 @@ def wall_post_later(api, gid, label, link, imagePath, delay):
 
 def album_post(api, gid, aid, label, link, imagePath):
     upload_url = api.call('photos.getUploadServer', group_id=gid, album_id=aid)['upload_url']
-    os.rename(imagePath, imagePath + '.jpg')
-    imagePath += '.jpg'
     response = requests.post(upload_url, files={"file1": open(imagePath, 'rb')}).json()
     image = api.call('photos.save',
                      server=response['server'],

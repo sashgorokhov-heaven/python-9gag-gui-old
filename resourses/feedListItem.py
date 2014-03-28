@@ -36,14 +36,13 @@ class feedListItem(GroupBoxProto):
         super().__init__(self, "resourses" + sep + "feedListItem.ui")
         self.id = id
         self.news = news
+        self.news['feedwidget'] = self
         self.setCaption(news['caption'])
         self.setVotes(news['votes'])
         self.setLink(news['link'])
         self.imageLoaded = False
         self.parent = parent
         self.parentItem = parentitem
-        self.news['widget'] = self
-        self.news['item'] = parentitem
         self.elements.imageLabel.movie = QtGui.QMovie(":/Icons/preloader.gif")
         if 'path' not in news:
             self.setLoading()
@@ -54,6 +53,7 @@ class feedListItem(GroupBoxProto):
         self.connect(self, QtCore.SIGNAL("setImage()"), self.setImage)
         self.connect(self, QtCore.SIGNAL("setLoading()"), self.setLoading)
         self.connect(self, QtCore.SIGNAL("setError()"), self.setError)
+        self.connect(self, QtCore.SIGNAL("setPosted()"), self.__setPosted)
         self.elements.checkBox.stateChanged.connect(self.setChecked)
         self.elements.imageLabel.mouseDoubleClickEvent = self.imageDoubleClicked
         self.elements.linkLabel.mouseDoubleClickEvent = self.linkDoubleClicked
@@ -62,13 +62,21 @@ class feedListItem(GroupBoxProto):
         self.elements.captionLabel.setText(str(caption))
 
     def setChecked(self, checkState):
-        if not self.imageLoaded: return
+        if not self.imageLoaded or self.news['posted']: return
         if checkState == 2:
             self.setStyleSheet("background-color: rgb(161, 255, 144);")
             self.parent.elements.countLabel.inc()
         else:
             self.setStyleSheet("")
             self.parent.elements.countLabel.dec()
+
+    def setPosted(self):
+        self.emit(QtCore.SIGNAL("setPosted()"))
+
+    def __setPosted(self):
+        self.setChecked(0)
+        self.setStyleSheet("background-color: rgb(50, 50, 50);")
+        self.setEnabled(False)
 
     def mouseDoubleClickEvent(self, event):
         if not self.imageLoaded: return
@@ -87,8 +95,10 @@ class feedListItem(GroupBoxProto):
     def setImage(self):
         self.elements.imageLabel.movie.stop()
         self.elements.imageLabel.setText("")
-        width = 400 #self.elements.imageLabel.width()
+        width = 400 #self.elements.imageLabel.width
         pixmap = QtGui.QPixmap(self.news['path']).scaledToWidth(width)
+        if self.news['posted']:
+            self.setPosted()
         self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
         self.elements.imageLabel.setPixmap(pixmap)
         self.parentItem.setSizeHint(self.sizeHint())
@@ -109,4 +119,4 @@ class feedListItem(GroupBoxProto):
         self.elements.linkLabel.setText(str(link))
 
     def checked(self):
-        return self.elements.checkBox.isChecked()
+        return self.elements.checkBox.isChecked() and not self.news['posted']

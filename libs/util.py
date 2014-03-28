@@ -115,6 +115,10 @@ class CountLabel():
         if self.checkedItems == 0:
             self.parent.elements.nextButton.setEnabled(False)
 
+    def set(self, n):
+        self.checkedItems = n
+        self.label.setText(str(n))
+
 
 class GagFeed:
     def __init__(self, parent):
@@ -133,8 +137,13 @@ class GagFeed:
             myItem = feedListItem(nid, self.news[nid], item, self.parent)
             self.parent.elements.feedList.addItem(item)
             self.parent.elements.feedList.setItemWidget(item, myItem)
+            if self.news[nid]['posted']:
+                self.news[nid]['itemwidget'].setPosted()
             if 'path' not in self.news[nid]:
                 self.loadQueque.append(nid)
+
+    def refresh(self):
+        pass
 
     @threaded
     def getFeed(self, section="hot", nid=None):
@@ -197,7 +206,6 @@ class GagFeed:
                     try:
                         imagePath = self.api.download(self.news[nid]['image'])
                         os.rename(imagePath, imagePath + '.' + self.getFileType(imagePath))
-                        #print('{} is {}'.format(item.caption, self.getFileType(imagePath)))
                         imagePath += '.' + self.getFileType(imagePath)
                     except Exception as e:
                         print('Error while loading image for caption "{}" {} time'.format(self.news[nid]['caption'], i))
@@ -207,7 +215,7 @@ class GagFeed:
                 if not imagePath:
                     continue
                 self.news[nid]['path'] = imagePath
-                self.news[nid]['widget'].emit(QtCore.SIGNAL("setImage()"))
+                self.news[nid]['feedwidget'].emit(QtCore.SIGNAL("setImage()"))
         self.loadQueque.clear()
         if self.parent.elements.countLabel.checkedItems > 0:
             self.parent.elements.nextButton.setEnabled(True)

@@ -42,8 +42,6 @@ if not access_token:
 
 from forms.main_form import MainForm
 
-accesstokener.new(access_token, user_id, expires)
-
 app = PyQt4.QtGui.QApplication([])
 mainform = MainForm(access_token)
 mainform.show()

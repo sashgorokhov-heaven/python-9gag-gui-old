@@ -12,7 +12,6 @@ class editListItem(GroupBoxProto):
         self.news['editwidget'] = self
         self.setCaption(self.news['caption'])
         self.parent = parent
-        self.posttime = None
         self.parentItem = parentItem
         self.parentItem.setSizeHint(self.sizeHint())
         self.setImage(self.news['path'])
