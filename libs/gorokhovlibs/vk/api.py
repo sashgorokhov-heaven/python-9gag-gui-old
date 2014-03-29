@@ -31,8 +31,6 @@ class VKApi:
 
         if 'error' in response:
             raise VKError(response['error'])
-        if len(response['response']) == 0:
-            raise VKError('Empty response')
         return response['response']
 
     def download(self, link, filename=None):
