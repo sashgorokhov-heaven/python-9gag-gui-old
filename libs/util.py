@@ -18,44 +18,55 @@ class GagLabel(QtGui.QLabel):
         self.currentState = 'normal' # normal, loading, error
         super().__init__(parent)
 
+        self.setMouseTracking(True)
+
         self.movieGif = QtGui.QMovie(":/Icons/rotating.gif")
         self.normalPixmap = QtGui.QPixmap(":/Icons/9gag-icon.png")
         self.errorPixmap = QtGui.QPixmap(":/Icons/error-icon.png")
+        self.reloadhoverPixmap = QtGui.QPixmap(":/Icons/reload-icon-hover.png")
+        self.reloadclickPixmap = QtGui.QPixmap(":/Icons/reload-icon-click.png")
 
         self.setPixmap(self.normalPixmap)
         self.setScaledContents(True)
         self.setMouseTracking(True)
         self.resize(100, 100)
 
-        #self.hiding = False
+        self.showingreload = False
 
-        self.connect(self, QtCore.SIGNAL("hide()"), self.hide)
-        #self.connect(self, QtCore.SIGNAL("setVisible(bool)"), self.setVisible)
+        self.connect(self, QtCore.SIGNAL("setReloadIcon(bool)"), self.setReloadIcon)
         self.connect(self, QtCore.SIGNAL("setNormal()"), lambda: self.setPixmap(self.normalPixmap))
         self.connect(self, QtCore.SIGNAL("setError()"), lambda: self.setPixmap(self.errorPixmap))
         self.connect(self, QtCore.SIGNAL("setLoading()"), self.__setLoadingSignal)
         self.connect(self, QtCore.SIGNAL("unsetLoading()"), lambda: self.movieGif.stop())
-        #self.mouseMoveEvent = lambda event: self.hide()
+        #self.mouseMoveEvent = lambda event: self.showreload(event)
 
     def __setLoadingSignal(self):
         self.setMovie(self.movieGif)
         self.movieGif.start()
 
-    #@threaded
-    #def hide(self):
-    #    if self.hiding: return
-    #    self.hiding = True
-    #    self.emit(QtCore.SIGNAL("setVisible(bool)"), False)
-    #    time.sleep(0.5)
-    #    self.emit(QtCore.SIGNAL("setVisible(bool)"), True)
-    #    self.hiding = False
+    def showreload(self, event):
+        if self.currentState == 'loading': return
+        self.showingreload = True
+        state = self.currentState
+        self.setState('normal')
+        self.emit(QtCore.SIGNAL("setReloadIcon(bool)"), True)
+        while -50 <= event.x() <= 50 and -50 <= event.y() <= 50:
+            time.sleep(0.1)
+        self.emit(QtCore.SIGNAL("setReloadIcon(bool)"), False)
+        self.setState(state)
+        self.showingreload = False
+
+    def setReloadIcon(self, state):
+        if state:
+            self.setPixmap(self.reloadhoverPixmap)
+        else:
+            self.__setNormal()
 
     def adjust(self):
         self.move(self.parent.width() - self.width() + 20,
                   self.parent.height() - self.height() + 20)
 
     def __setNormal(self):
-
         self.emit(QtCore.SIGNAL("setNormal()"))
 
     def __setError(self):

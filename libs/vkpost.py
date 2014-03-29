@@ -4,26 +4,6 @@ import requests
 from libs import constants
 
 
-def post(api, newsitem):
-    aid = get_album(api, constants.groups['ru9gag'])
-    post_type = get_post_type(newsitem['editwidget'])
-    if post_type == 'wall delay':
-        delay = newsitem['widget'].elements.dateTimeEdit.dateTime().toTime_t()
-        wall_post_later(api, constants.groups['ru9gag'], newsitem['caption'], newsitem['link'], newsitem['path'], delay)
-    elif post_type == 'wall now':
-        wall_post_now(api, constants.groups['ru9gag'], newsitem['caption'], newsitem['link'], newsitem['path'])
-    else:
-        album_post(api, constants.groups['ru9gag'], aid, newsitem['caption'], newsitem['link'], newsitem['path'])
-
-
-def get_post_type(item):
-    if item.elements.directWallRB.isChecked():
-        if item.elements.waitUntilCheckBox.isChecked():
-            return "wall delay"
-        return "wall now"
-    return "album"
-
-
 def upload_image(api, gid, mode, imagePath):
     link = api.call('photos.' + mode[0], group_id=gid)['upload_url']
     response = api.upload(link, imagePath, 'photo')
@@ -69,3 +49,37 @@ def get_album(api, gid):
             aid = album['id']
             break
     return aid
+
+
+def get_post_type(widget):
+    if widget.elements.directWallRB.isChecked():
+        if widget.elements.waitUntilCheckBox.isChecked():
+            return "wall delay"
+        return "wall now"
+    return "album"
+
+
+def get_group(widget):
+    if widget.elements.ru9gagCheck.isChecked():
+        return constants.groups['ru9gag']
+    if widget.elements.gifsCheck.isChecked():
+        return constants.groups['9gifs']
+    if widget.elements.geekCheck.isChecked():
+        return constants.groups['9geek']
+    if widget.elements.cuteCheck.isChecked():
+        return constants.groups['9cute']
+    if widget.elements.nsfwCheck.isChecked():
+        return constants.groups['9nsfw']
+
+
+def post(api, newsitem):
+    aid = get_album(api, constants.groups['ru9gag'])
+    post_type = get_post_type(newsitem['editwidget'])
+    group = get_group(newsitem['editwidget'])
+    if post_type == 'wall delay':
+        delay = newsitem['editwidget'].elements.dateTimeEdit.dateTime().toTime_t()
+        wall_post_later(api, group, newsitem['caption'], newsitem['link'], newsitem['path'], delay)
+    elif post_type == 'wall now':
+        wall_post_now(api, group, newsitem['caption'], newsitem['link'], newsitem['path'])
+    else:
+        album_post(api, group, aid, newsitem['caption'], newsitem['link'], newsitem['path'])
