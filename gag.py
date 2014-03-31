@@ -17,21 +17,13 @@ except ImportError:
     print("Module 'PyQt4' is not found")
     exit(-1)
 
-login = ""
-password = ""
-
 access_token = user_id = None
 
 if not accesstokener.good():
-    if not login or not password:
-        from libs.gorokhovlibs.vk.qt.auth import show_browser
+    from libs.gorokhovlibs.vk.qt.auth import show_browser
 
-        access_token, user_id, expires = show_browser(constants.application_id, constants.permissions_scope)
-    elif login and password:
-        from libs.gorokhovlibs.vk.auth import VKAuth
+    access_token, user_id, expires = show_browser(constants.application_id, constants.permissions_scope)
 
-        access_token, user_id, expires = VKAuth(login, password,
-                                                constants.application_id, constants.permissions_scope).result()
     accesstokener.new(access_token, user_id, expires)
 else:
     access_token, user_id, expires = accesstokener.get()
