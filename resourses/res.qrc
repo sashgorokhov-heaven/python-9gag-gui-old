@@ -9,4 +9,11 @@
         <file>icon.png</file>
         <file>9gag-icon.png</file>
     </qresource>
+    <qresource prefix="ListIcons">
+        <file>9cute.PNG</file>
+        <file>9geek.PNG</file>
+        <file>9gif.PNG</file>
+        <file>9nsfw.PNG</file>
+        <file>ru9gag.PNG</file>
+    </qresource>
 </RCC>
