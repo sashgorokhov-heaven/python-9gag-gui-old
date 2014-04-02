@@ -4,7 +4,7 @@ import json
 import urllib.request
 
 
-class Gag_api():
+class GagApi():
     def __init__(self):
         self.sections = {'trending', 'hot', 'vote', 'fresh'}
 
