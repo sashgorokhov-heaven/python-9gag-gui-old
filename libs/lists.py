@@ -1,13 +1,12 @@
 __author__ = 'Александр Горохов'
 
 from PyQt4 import QtGui, QtCore
-from libs.listitems import FeedListItemWidget
+from libs.listitems import FeedListItemWidget, EditListItemWidget
 #from resourses.editListItem import editListItem
 import threading, time, sys, os
 from libs.gagapi import GagApi
 from libs.gorokhovlibs.vk.api import VKApi
 from libs.gorokhovlibs.threadeddecor import threaded
-from libs.listitems import *
 
 
 class FeedList(QtCore.QObject):
@@ -41,8 +40,6 @@ class FeedList(QtCore.QObject):
             widget = FeedListItemWidget(nid, self.news[nid], item, self)
             self.qtlist.addItem(item)
             self.qtlist.setItemWidget(item, widget)
-            self.news[nid]['feeditem'] = item
-            self.news[nid]['feedwidget'] = widget
             if 'path' not in self.news[nid]:
                 self.loadQueque.append(nid)
 
@@ -145,9 +142,10 @@ class FeedList(QtCore.QObject):
 
 
 class EditList(QtCore.QObject):
-    def __init__(self, qlistwidget, parent, acctoken):
+    def __init__(self, qlistwidget, parent, acctoken, news):
         super().__init__()
         self.qtlist = qlistwidget
+        self.news = news
         self.parent = parent
         self.api = VKApi(acctoken)
         self.posting = False
@@ -158,13 +156,10 @@ class EditList(QtCore.QObject):
         self.emit(QtCore.SIGNAL("setEditProgressBar(int)"), int(n))
 
     def __addItem(self, nid):
-        pass
-        # item = QtGui.QListWidgetItem()
-        # widget = editListItem(nid, item, self)
-        # self.qtlist.addItem(item)
-        # self.qtlist.setItemWidget(item, widget)
-        # self.parent.feedList.news[nid]['edititem'] = item
-        # self.parent.feedList.news[nid]['editwidget'] = widget
+        item = QtGui.QListWidgetItem()
+        widget = EditListItemWidget(nid, self.news[nid], item, self)
+        self.qtlist.addItem(item)
+        self.qtlist.setItemWidget(item, widget)
 
     def addItem(self, nid):
         self.emit(QtCore.SIGNAL("addEditItem(QString)"), str(nid))

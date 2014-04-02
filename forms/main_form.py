@@ -14,7 +14,7 @@ class MainForm(BaseQtWindow):
         self.elements.reloadLabel.movie = QtGui.QMovie(':/Icons/ajax-loader.gif')
         self.elements.reloadLabel.setMovie(self.elements.reloadLabel.movie)
         self.feedList = FeedList(self.elements.feedList, self)
-        self.editList = EditList(self.elements.editList, self, access_token)
+        self.editList = EditList(self.elements.editList, self, access_token, self.feedList.news)
         self.feedList.getFeed()
 
     def _set_connections(self):

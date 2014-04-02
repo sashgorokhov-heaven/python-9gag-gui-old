@@ -43,6 +43,8 @@ class FeedListItemWidget(GroupBoxProto):
         self.imageLoaded = False
         self.imageHidden = False
         self.parent = parent
+        self.news['feeditem'] = parentitem
+        self.news['feedwidget'] = self
         self.parentItem = parentitem
         self.elements.imageLabel.movie = QtGui.QMovie(":/Icons/preloader.gif")
         self.elements.hideButton.setEnabled(False)
@@ -90,6 +92,8 @@ class FeedListItemWidget(GroupBoxProto):
     def __setMessage(self, msg):
         self.elements.imageLabel.clear()
         self.elements.imageLabel.setText(msg)
+        self.parentItem.setSizeHint(QtCore.QSize(self.width(),
+                                                 self.elements.imageLabel.sizeHint().height() + self.elements.frame_2.height() + self.elements.frame_3.height()))
 
     def setImage(self):
         self.emit(QtCore.SIGNAL("setImage()"))
@@ -120,12 +124,12 @@ class FeedListItemWidget(GroupBoxProto):
         self.elements.linkLabel.setText(str(link))
 
     def mouseDoubleClickEvent(self, event):
-        if not self.imageLoaded: return
+        if not self.imageLoaded or self.news['posted']: return
         self.moveToEditList()
 
     def moveToEditList(self):
-        self.parent.parent.emit(QtCore.SIGNAL("item_toggled(QString)"), self.nid)
-        pass
+        self.parentItem.setHidden(True)
+        self.parent.parent.editList.addItem(self.nid)
 
     def imageDoubleClicked(self, event):
         if self.imageLoaded:
@@ -149,3 +153,40 @@ class FeedListItemWidget(GroupBoxProto):
         self.elements.imageLabel.setPixmap(QtGui.QPixmap(":/Icons/error-icon.png"))
         self.parentItem.setSizeHint(QtCore.QSize(self.width(),
                                                  self.elements.imageLabel.sizeHint().height() + self.elements.frame_2.height() + self.elements.frame_3.height()))
+
+
+class EditListItemWidget(GroupBoxProto):
+    def __init__(self, nid, news, parentItem, parent):
+        super().__init__(self, "resourses" + os.sep + "EditListItem.ui")
+        self.nid = nid
+        self.news = news
+        self.news['edititem'] = parentItem
+        self.news['editwidget'] = self
+        self.parentItem = parentItem
+        self.parent = parent
+        self.setInfo(news['title'], news['imagepath'])
+
+    def _set_connections(self):
+        self.elements.imageLabel.mouseDoubleClickEvent = self.imageDoubleClicked
+
+    def setInfo(self, title, imagepath):
+        self.elements.titleLabel.setText(title)
+        pixmap = QtGui.QPixmap(imagepath).scaledToWidth(self.elements.imageLabel.width())
+        self.elements.imageLabel.setPixmap(pixmap)
+        self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
+        self.parentItem.setSizeHint(QtCore.QSize(self.width(),
+                                                 self.elements.imageLabel.sizeHint().height() + self.elements.frame_2.height() + self.elements.frame_3.height()))
+
+    def mouseDoubleClickEvent(self, event):
+        self.moveToFeedList()
+
+    def imageDoubleClicked(self, event):
+        os.startfile(self.news['imagepath'])
+
+    def moveToFeedList(self):
+        if 'feeditem' in self.news:
+            self.news['feeditem'].setHidden(False)
+        self.parent.qtlist.removeItemWidget(self.news['edititem'])
+        self.news.pop('editwidget', False)
+        self.parent.qtlist.takeItem(self.parent.qtlist.row(self.news['edititem']))
+        self.news.pop('edititem', False)
