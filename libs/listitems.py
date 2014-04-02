@@ -61,14 +61,28 @@ class FeedListItemWidget(GroupBoxProto):
         self.connect(self, QtCore.SIGNAL("setError()"), self.__setError)
         self.connect(self, QtCore.SIGNAL("setPosted()"), self.__setPosted)
         self.connect(self, QtCore.SIGNAL("setMessage(QString)"), self.__setMessage)
-        self.elements.checkBox.stateChanged.connect(self.setChecked)
         self.elements.hideButton.clicked.connect(self.hideButtonClicked)
         self.elements.hideButton2.clicked.connect(self.hideButtonClicked)
         self.elements.imageLabel.mouseDoubleClickEvent = self.imageDoubleClicked
         self.elements.linkLabel.mouseDoubleClickEvent = self.linkDoubleClicked
 
     def hideButtonClicked(self):
-        pass
+        if not self.imageHidden:
+            self.elements.imageLabel.setVisible(False)
+            self.elements.hideButton.setText("Показать")
+            self.elements.hideButton2.setText("Показать")
+            self.elements.hideButton2.setVisible(False)
+            self.parentItem.setSizeHint(
+                QtCore.QSize(self.width(), self.elements.frame_2.height() + self.elements.frame_3.height()))
+            self.imageHidden = True
+        else:
+            self.elements.imageLabel.setVisible(True)
+            self.elements.hideButton.setText("Скрыть")
+            self.elements.hideButton2.setText("Скрыть")
+            self.elements.hideButton2.setVisible(True)
+            self.parentItem.setSizeHint(QtCore.QSize(self.width(),
+                                                     self.elements.imageLabel.sizeHint().height() + self.elements.frame_2.height() + self.elements.frame_3.height()))
+            self.imageHidden = False
 
     def setMessage(self, msg):
         self.emit(QtCore.SIGNAL("setMessage(QString)"), str(msg))
@@ -86,8 +100,9 @@ class FeedListItemWidget(GroupBoxProto):
         pixmap = QtGui.QPixmap(self.news['imagepath']).scaledToWidth(self.elements.imageLabel.width())
         self.elements.imageLabel.setPixmap(pixmap)
         self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
-        self.parentItem.setSizeHint(self.sizeHint())
-        self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
+        self.parentItem.setSizeHint(QtCore.QSize(self.width(),
+                                                 self.elements.imageLabel.sizeHint().height() + self.elements.frame_2.height() + self.elements.frame_3.height()))
+        #self.elements.imageLabel.resize(pixmap.width(), pixmap.height())
         self.elements.hideButton.setEnabled(True)
         self.elements.hideButton2.setEnabled(True)
         self.imageLoaded = True
@@ -96,7 +111,6 @@ class FeedListItemWidget(GroupBoxProto):
         self.emit(QtCore.SIGNAL("setPosted()"))
 
     def __setPosted(self):
-        self.setChecked(0)
         self.setStyleSheet("background-color: rgb(50, 50, 50);")
         self.setEnabled(False)
 
@@ -105,20 +119,13 @@ class FeedListItemWidget(GroupBoxProto):
         self.elements.votesLabel.setText(str(votes))
         self.elements.linkLabel.setText(str(link))
 
-    def setChecked(self, checkState):
-        if not self.imageLoaded or self.news['posted']: return
-        if checkState == 2:
-            self.setStyleSheet("background-color: rgb(161, 255, 144);")
-        else:
-            self.setStyleSheet("")
-        self.parent.parent.emit(QtCore.SIGNAL("item_toggled(QString)"), self.nid)
-
     def mouseDoubleClickEvent(self, event):
         if not self.imageLoaded: return
-        if self.checked():
-            self.elements.checkBox.setCheckState(0)
-        else:
-            self.elements.checkBox.setCheckState(2)
+        self.moveToEditList()
+
+    def moveToEditList(self):
+        self.parent.parent.emit(QtCore.SIGNAL("item_toggled(QString)"), self.nid)
+        pass
 
     def imageDoubleClicked(self, event):
         if self.imageLoaded:
@@ -140,6 +147,5 @@ class FeedListItemWidget(GroupBoxProto):
     def __setError(self):
         self.elements.imageLabel.movie.stop()
         self.elements.imageLabel.setPixmap(QtGui.QPixmap(":/Icons/error-icon.png"))
-
-    def checked(self):
-        return self.elements.checkBox.isChecked() and not self.news['posted']
+        self.parentItem.setSizeHint(QtCore.QSize(self.width(),
+                                                 self.elements.imageLabel.sizeHint().height() + self.elements.frame_2.height() + self.elements.frame_3.height()))

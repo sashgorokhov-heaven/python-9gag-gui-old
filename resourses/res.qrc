@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="Icons">
+        <file>ajax-loader.gif</file>
         <file>error-icon.png</file>
         <file>reload-icon.png</file>
         <file>reload-icon-click.png</file>

@@ -10,6 +10,9 @@ class MainForm(BaseQtWindow):
     def __init__(self, access_token):
         self.exiting = False
         super().__init__(self, 'resourses' + sep + 'MainForm.ui')
+        self.elements.reloadLabel.setVisible(False)
+        self.elements.reloadLabel.movie = QtGui.QMovie(':/Icons/ajax-loader.gif')
+        self.elements.reloadLabel.setMovie(self.elements.reloadLabel.movie)
         self.feedList = FeedList(self.elements.feedList, self)
         self.editList = EditList(self.elements.editList, self, access_token)
         self.feedList.getFeed()
@@ -66,8 +69,12 @@ class MainForm(BaseQtWindow):
     def __feed_loading(self, state):
         if state:
             self.elements.refreshButton.setEnabled(False)
+            self.elements.reloadLabel.setVisible(True)
+            self.elements.reloadLabel.movie.start()
         else:
             self.elements.refreshButton.setEnabled(True)
+            self.elements.reloadLabel.setVisible(False)
+            self.elements.reloadLabel.movie.stop()
 
     def feed_loading(self, bool):
         self.emit(QtCore.SIGNAL("feed_loading(bool)"), bool)
