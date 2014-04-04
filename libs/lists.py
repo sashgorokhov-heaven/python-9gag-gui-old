@@ -6,6 +6,7 @@ from libs.listitems import FeedListItemWidget, EditListItemWidget
 import threading, time, sys, os
 from libs.gagapi import GagApi
 from libs.gorokhovlibs.vk.api import VKApi
+from libs import vkpost
 from libs.gorokhovlibs.threadeddecor import threaded
 
 
@@ -23,13 +24,9 @@ class FeedList(QtCore.QObject):
         self.loadQueque = list()
         self.connect(self, QtCore.SIGNAL("addFeedItem(QString)"), self.__addItem)
         self.connect(self, QtCore.SIGNAL("setFeedProgressBar(int)"), self.parent.elements.feedProgressBar.setValue)
-        self.connect(self, QtCore.SIGNAL("item_toggled(QString)"), self.item_toggled)
         self.parent.refreshButton.clicked.connect(self.refresh)
         self.setProgressBar(0)
         self.qtlist.verticalScrollBar().valueChanged.connect(self.handle_scrollBarValue)
-
-    def item_toggled(self, nid):
-        pass
 
     def setProgressBar(self, n):
         self.emit(QtCore.SIGNAL("setFeedProgressBar(int)"), int(n))
@@ -91,7 +88,8 @@ class FeedList(QtCore.QObject):
                                                   'votes': str(newsitem["votes"]["count"]),
                                                   'link': newsitem['link'],
                                                   'image': newsitem["images"]["large"],
-                                                  'posted': False}
+                                                  'posted': False,
+                                                  'hidden': False}
             self.addItem(str(newsitem['id']))
         self.complete = True
 
@@ -112,7 +110,7 @@ class FeedList(QtCore.QObject):
                         os.rename(imagePath, imagePath + '.jpg')
                         imagePath += '.jpg'
                     except Exception as e:
-                        print('Error while loading image for caption "{}" {} time'.format(self.news[nid]['caption'], i))
+                        print('Error while loading image for caption "{}" {} time'.format(self.news[nid]['title'], i))
                         continue
                     else:
                         break
@@ -149,8 +147,35 @@ class EditList(QtCore.QObject):
         self.parent = parent
         self.api = VKApi(acctoken)
         self.posting = False
+        self.parent.elements.sendButton.setEnabled(False)
         self.connect(self, QtCore.SIGNAL("addEditItem(QString)"), self.__addItem)
         self.connect(self, QtCore.SIGNAL("setEditProgressBar(int)"), self.parent.elements.editProgressBar.setValue)
+        self.parent.elements.sendButton.clicked.connect(self.sendButtonClicked)
+        self.setProgressBar(0)
+
+    def sendButtonClicked(self):
+        self.parent.edit_posting(True)
+        self.post()
+
+    @threaded
+    def post(self):
+        self.setProgressBar(0)
+        for n, i in enumerate(self, 1):
+            item, widget = i
+            if self.parent.exiting:
+                return
+            try:
+                vkpost.post(self.api, widget.news)
+            except Exception as e:
+                print("Error while posting {}".format(widget.nid))
+                print(e)
+                self.setProgressBar(round((n / len(self)) * 100))
+                continue
+            self.setProgressBar(round((n / len(self)) * 100))
+            widget.news['posted'] = True
+            widget.moveToFeedList()
+        self.setProgressBar(100)
+        self.parent.edit_posting(False)
 
     def setProgressBar(self, n):
         self.emit(QtCore.SIGNAL("setEditProgressBar(int)"), int(n))
@@ -163,6 +188,7 @@ class EditList(QtCore.QObject):
 
     def addItem(self, nid):
         self.emit(QtCore.SIGNAL("addEditItem(QString)"), str(nid))
+        self.itemMoved(nid)
 
     def __iter__(self):
         return [(self.qtlist.item(i), self.qtlist.itemWidget(self.qtlist.item(i)))
@@ -176,3 +202,9 @@ class EditList(QtCore.QObject):
         for nid in self.parent.feedList.news:
             self.parent.feedList.news[nid].pop("edititem", False)
             self.parent.feedList.news[nid].pop("editwidget", False)
+
+    def itemMoved(self, nid):
+        if len(self) == 0:
+            self.parent.elements.sendButton.setEnabled(False)
+        else:
+            self.parent.elements.sendButton.setEnabled(True)

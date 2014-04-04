@@ -60,26 +60,17 @@ def get_post_type(widget):
 
 
 def get_group(widget):
-    if widget.elements.ru9gagCheck.isChecked():
-        return constants.groups['ru9gag']
-    if widget.elements.gifsCheck.isChecked():
-        return constants.groups['9gifs']
-    if widget.elements.geekCheck.isChecked():
-        return constants.groups['9geek']
-    if widget.elements.cuteCheck.isChecked():
-        return constants.groups['9cute']
-    if widget.elements.nsfwCheck.isChecked():
-        return constants.groups['9nsfw']
+    return constants.groups[widget.elements.comboBox.currentText()]
 
 
 def post(api, newsitem):
-    aid = get_album(api, constants.groups['ru9gag'])
-    post_type = get_post_type(newsitem['editwidget'])
     group = get_group(newsitem['editwidget'])
+    aid = get_album(api, group)
+    post_type = get_post_type(newsitem['editwidget'])
     if post_type == 'wall delay':
         delay = newsitem['editwidget'].elements.dateTimeEdit.dateTime().toTime_t()
-        wall_post_later(api, group, newsitem['caption'], newsitem['link'], newsitem['path'], delay)
+        wall_post_later(api, group, newsitem['title'], newsitem['link'], newsitem['imagepath'], delay)
     elif post_type == 'wall now':
-        wall_post_now(api, group, newsitem['caption'], newsitem['link'], newsitem['path'])
+        wall_post_now(api, group, newsitem['title'], newsitem['link'], newsitem['imagepath'])
     else:
-        album_post(api, group, aid, newsitem['caption'], newsitem['link'], newsitem['path'])
+        album_post(api, group, aid, newsitem['title'], newsitem['link'], newsitem['imagepath'])

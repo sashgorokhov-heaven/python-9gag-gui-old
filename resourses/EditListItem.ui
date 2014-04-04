@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>401</width>
-    <height>222</height>
+    <height>128</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -454,7 +454,7 @@
             <string>ru9gag</string>
            </property>
            <property name="icon">
-            <iconset resource="res.qrc">
+            <iconset resource="Icons/res.qrc">
              <normaloff>:/ListIcons/ru9gag.PNG</normaloff>:/ListIcons/ru9gag.PNG</iconset>
            </property>
           </item>
@@ -463,7 +463,7 @@
             <string>9gifs</string>
            </property>
            <property name="icon">
-            <iconset resource="res.qrc">
+            <iconset resource="Icons/res.qrc">
              <normaloff>:/ListIcons/9gif.PNG</normaloff>:/ListIcons/9gif.PNG</iconset>
            </property>
           </item>
@@ -472,7 +472,7 @@
             <string>9geek</string>
            </property>
            <property name="icon">
-            <iconset resource="res.qrc">
+            <iconset resource="Icons/res.qrc">
              <normaloff>:/ListIcons/9geek.PNG</normaloff>:/ListIcons/9geek.PNG</iconset>
            </property>
           </item>
@@ -481,7 +481,7 @@
             <string>9cute</string>
            </property>
            <property name="icon">
-            <iconset resource="res.qrc">
+            <iconset resource="Icons/res.qrc">
              <normaloff>:/ListIcons/9cute.PNG</normaloff>:/ListIcons/9cute.PNG</iconset>
            </property>
           </item>
@@ -490,7 +490,7 @@
             <string>9nsfw</string>
            </property>
            <property name="icon">
-            <iconset resource="res.qrc">
+            <iconset resource="Icons/res.qrc">
              <normaloff>:/ListIcons/9nsfw.PNG</normaloff>:/ListIcons/9nsfw.PNG</iconset>
            </property>
           </item>
@@ -552,7 +552,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="res.qrc"/>
+  <include location="Icons/res.qrc"/>
  </resources>
  <connections/>
 </ui>

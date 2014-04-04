@@ -52,10 +52,13 @@ class FeedListItemWidget(GroupBoxProto):
         self.parentItem.setSizeHint(self.sizeHint())
         if 'imagepath' not in news:
             self.setLoading()
-        else:
+        elif not news['posted']:
             self.setImage()
+        if self.news['hidden']:
+            self.parentItem.setHidden(True)
         if news['posted']:
             self.setPosted()
+
 
     def _set_connections(self):
         self.connect(self, QtCore.SIGNAL("setImage()"), self.__setImage)
@@ -117,6 +120,8 @@ class FeedListItemWidget(GroupBoxProto):
     def __setPosted(self):
         self.setStyleSheet("background-color: rgb(50, 50, 50);")
         self.setEnabled(False)
+        if not self.imageHidden:
+            self.hideButtonClicked()
 
     def setInfo(self, title, votes, link):
         self.elements.titleLabel.setText(str(title))
@@ -129,6 +134,7 @@ class FeedListItemWidget(GroupBoxProto):
 
     def moveToEditList(self):
         self.parentItem.setHidden(True)
+        self.news['hidden'] = True
         self.parent.parent.editList.addItem(self.nid)
 
     def imageDoubleClicked(self, event):
@@ -168,6 +174,24 @@ class EditListItemWidget(GroupBoxProto):
 
     def _set_connections(self):
         self.elements.imageLabel.mouseDoubleClickEvent = self.imageDoubleClicked
+        self.connect(self, QtCore.SIGNAL("moveToFeedList()"), self.__moveToFeedList)
+        self.elements.waitUntilCheckBox.stateChanged.connect(self.setDateTimeEditEnabled)
+        self.elements.directWallRB.toggled.connect(self.setwaitUntilCheckBoxEnabled)
+
+    def setwaitUntilCheckBoxEnabled(self, checkState):
+        if checkState:
+            self.elements.waitUntilCheckBox.setEnabled(True)
+        else:
+            self.elements.waitUntilCheckBox.setEnabled(False)
+            self.setDateTimeEditEnabled(0)
+
+    def setDateTimeEditEnabled(self, checkState):
+        if checkState == 2:
+            self.elements.dateTimeEdit.setEnabled(True)
+            self.elements.dateTimeEdit.setTime(QtCore.QTime.currentTime())
+            self.elements.dateTimeEdit.setDate(QtCore.QDate.currentDate())
+        else:
+            self.elements.dateTimeEdit.setEnabled(False)
 
     def setInfo(self, title, imagepath):
         self.elements.titleLabel.setText(title)
@@ -183,10 +207,17 @@ class EditListItemWidget(GroupBoxProto):
     def imageDoubleClicked(self, event):
         os.startfile(self.news['imagepath'])
 
-    def moveToFeedList(self):
+    def __moveToFeedList(self):
         if 'feeditem' in self.news:
             self.news['feeditem'].setHidden(False)
+            self.news['hidden'] = False
+            if self.news['posted']:
+                self.news['feedwidget'].setPosted()
         self.parent.qtlist.removeItemWidget(self.news['edititem'])
         self.news.pop('editwidget', False)
         self.parent.qtlist.takeItem(self.parent.qtlist.row(self.news['edititem']))
         self.news.pop('edititem', False)
+        self.parent.itemMoved(self.nid)
+
+    def moveToFeedList(self):
+        self.emit(QtCore.SIGNAL("moveToFeedList()"))

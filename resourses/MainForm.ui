@@ -117,7 +117,7 @@
    <string>9GAG Project</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="res.qrc">
+   <iconset resource="Icons/res.qrc">
     <normaloff>:/Icons/icon.png</normaloff>:/Icons/icon.png</iconset>
   </property>
   <property name="autoFillBackground">
@@ -577,6 +577,12 @@ background: rgb(25, 25, 25)
          </property>
          <item>
           <widget class="QProgressBar" name="editProgressBar">
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>25</height>
+            </size>
+           </property>
            <property name="styleSheet">
             <string notr="true">QProgressBar {
 padding: 1px;
@@ -599,7 +605,90 @@ background: rgb(25, 25, 25)
           </widget>
          </item>
          <item>
+          <widget class="QLabel" name="postLabel">
+           <property name="palette">
+            <palette>
+             <active>
+              <colorrole role="Base">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>118</red>
+                 <green>118</green>
+                 <blue>118</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Window">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>36</red>
+                 <green>36</green>
+                 <blue>36</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </active>
+             <inactive>
+              <colorrole role="Base">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>118</red>
+                 <green>118</green>
+                 <blue>118</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Window">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>36</red>
+                 <green>36</green>
+                 <blue>36</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </inactive>
+             <disabled>
+              <colorrole role="Base">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>36</red>
+                 <green>36</green>
+                 <blue>36</blue>
+                </color>
+               </brush>
+              </colorrole>
+              <colorrole role="Window">
+               <brush brushstyle="SolidPattern">
+                <color alpha="255">
+                 <red>36</red>
+                 <green>36</green>
+                 <blue>36</blue>
+                </color>
+               </brush>
+              </colorrole>
+             </disabled>
+            </palette>
+           </property>
+           <property name="autoFillBackground">
+            <bool>true</bool>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="sendButton">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+           <property name="minimumSize">
+            <size>
+             <width>0</width>
+             <height>25</height>
+            </size>
+           </property>
            <property name="palette">
             <palette>
              <active>
@@ -701,7 +790,7 @@ background: rgb(25, 25, 25)
   </layout>
  </widget>
  <resources>
-  <include location="res.qrc"/>
+  <include location="Icons/res.qrc"/>
  </resources>
  <connections/>
 </ui>

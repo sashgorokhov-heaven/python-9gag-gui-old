@@ -1,14 +1,14 @@
 <RCC>
     <qresource prefix="Icons">
+        <file>9gag-icon.png</file>
         <file>ajax-loader.gif</file>
         <file>error-icon.png</file>
+        <file>icon.png</file>
+        <file>preloader.gif</file>
         <file>reload-icon.png</file>
         <file>reload-icon-click.png</file>
         <file>reload-icon-hover.png</file>
         <file>rotating.gif</file>
-        <file>preloader.gif</file>
-        <file>icon.png</file>
-        <file>9gag-icon.png</file>
     </qresource>
     <qresource prefix="ListIcons">
         <file>9cute.PNG</file>
