@@ -65,7 +65,6 @@ def get_group(widget):
 
 def post(api, newsitem):
     group = get_group(newsitem['editwidget'])
-    aid = get_album(api, group)
     post_type = get_post_type(newsitem['editwidget'])
     if post_type == 'wall delay':
         delay = newsitem['editwidget'].elements.dateTimeEdit.dateTime().toTime_t()
@@ -73,4 +72,5 @@ def post(api, newsitem):
     elif post_type == 'wall now':
         wall_post_now(api, group, newsitem['title'], newsitem['link'], newsitem['imagepath'])
     else:
+        aid = get_album(api, group)
         album_post(api, group, aid, newsitem['title'], newsitem['link'], newsitem['imagepath'])

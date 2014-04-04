@@ -37,4 +37,4 @@ from forms.main_form import MainForm
 app = PyQt4.QtGui.QApplication([])
 mainform = MainForm(access_token)
 mainform.show()
-exit(app.exec_())
+app.exec_()
