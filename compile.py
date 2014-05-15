@@ -20,7 +20,7 @@ buildOptions = dict(create_shared_zip=True,
                     silent=True)
 
 setup(name="9GAG Project",
-      version="2.0",
+      version="3.0",
       description="The 9GAG Project",
       options={'build_exe': buildOptions},
       executables=executables,

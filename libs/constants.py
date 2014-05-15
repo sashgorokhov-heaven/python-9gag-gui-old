@@ -8,4 +8,4 @@ groups = {
     '9geek': '56910779',
     '9cute': '56910814',
     '9nsfw': '61957890'}
-print("Warning: dont forget to change ru9gag ID")
+#print("Warning: dont forget to change ru9gag ID")

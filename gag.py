@@ -20,7 +20,8 @@ if not accesstokener.good():
     from libs.gorokhovlibs.vk.qt.auth import show_browser
 
     access_token, user_id, expires = show_browser(constants.application_id, constants.permissions_scope)
-
+    if not access_token:
+        exit(-1)
     accesstokener.new(access_token, user_id, expires)
 else:
     access_token, user_id, expires = accesstokener.get()
