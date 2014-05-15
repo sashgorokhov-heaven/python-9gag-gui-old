@@ -1,8 +1,5 @@
 __author__ = 'Alexander'
 
-# TODO: Скрипт удаления одинаковых новостей
-# TODO: Скрипт-сервис автопоста
-
 from libs import constants, util
 from libs.gorokhovlibs.vk import accesstokener
 
