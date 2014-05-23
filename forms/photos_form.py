@@ -20,6 +20,7 @@ class PhotosForm(BaseQtWindow):
         self.stop = False
         self.stopload = False
         self.photos = None
+        a = 3
         self.updating = False
         self.addingLock = threading.Lock()
 
