@@ -1,5 +1,7 @@
 from cx_Freeze import setup, Executable
 
+print('\nPyQt4 NEED SOME CHANGES\n')
+
 executables = [
     Executable("gag.py",
                appendScriptToExe=True,
