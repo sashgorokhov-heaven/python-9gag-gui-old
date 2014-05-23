@@ -12,9 +12,9 @@ delay = 3600 # на сколько откладывать пост, в секу�
 from PyQt4 import QtCore, QtGui
 from libs.gorokhovlibs.vk import accesstokener
 from libs.gorokhovlibs.vk.api import VKApi
-from libs.gorokhovlibs.threading import threaded
+from libs.gorokhovlibs.threadeddecor import threaded
 from libs import constants, vkpost
-from libs.gagapi import Gag_api
+from libs.gagapi import GagApi
 from resourses import resourcefile
 
 import time, os, time
@@ -77,7 +77,7 @@ class Trayer(QtGui.QWidget):
             self.waiter()
             self.showMessage('9GAG Autoposter', 'Получаю новости', 1)
             try:
-                feed = Gag_api().call('hot')["data"][:count]
+                feed = GagApi().call('hot')["data"][:count]
                 for news in feed:
                     if self.exiting: return
                     self.post(news)

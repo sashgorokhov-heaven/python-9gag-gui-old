@@ -1,4 +1,4 @@
-from PyQt4 import QtCore, QtWebKit, QtGui
+from PyQt4 import QtCore, QtGui, QtWebKit
 from urllib.parse import urlparse
 
 

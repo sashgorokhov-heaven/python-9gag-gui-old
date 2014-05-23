@@ -1,8 +1,5 @@
 __author__ = 'Alexander'
 
-# TODO: Скрипт удаления одинаковых новостей
-# TODO: Скрипт-сервис автопоста
-
 from libs import constants, util
 from libs.gorokhovlibs.vk import accesstokener
 
@@ -23,7 +20,8 @@ if not accesstokener.good():
     from libs.gorokhovlibs.vk.qt.auth import show_browser
 
     access_token, user_id, expires = show_browser(constants.application_id, constants.permissions_scope)
-
+    if not access_token:
+        exit(-1)
     accesstokener.new(access_token, user_id, expires)
 else:
     access_token, user_id, expires = accesstokener.get()
@@ -37,5 +35,4 @@ from forms.main_form import MainForm
 app = PyQt4.QtGui.QApplication([])
 mainform = MainForm(access_token)
 mainform.show()
-
 app.exec_()

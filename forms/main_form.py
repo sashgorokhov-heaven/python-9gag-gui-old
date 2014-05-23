@@ -2,134 +2,57 @@ __author__ = 'Alexander'
 from PyQt4 import QtCore, QtGui
 from os import sep
 
-from libs import vkpost, constants
-from libs.gorokhovlibs.vk.api import VKApi
 from libs.gorokhovlibs.qt.qtwindow import BaseQtWindow
-from libs.gorokhovlibs.threading import threaded
-from libs.util import GagLabel, CountLabel, GagFeed, showmessage
-from resourses.editListItem import editListItem
+from libs.lists import *
 
 
 class MainForm(BaseQtWindow):
     def __init__(self, access_token):
-        super().__init__(self, 'resourses' + sep + 'MainForm.ui')
         self.exiting = False
-        self.mode = "feed" # feed -> editing -> back
-        self.setupGUI()
-        self.api = VKApi(access_token)
-        self.feed = GagFeed(self)
-        self.connect(self, QtCore.SIGNAL("addItem(QString)"), self.feed.addItem)
-        self.feed.getFeed()
-
-    def setupGUI(self):
-        self.elements.gagLabel = GagLabel(self)
-        self.elements.gagLabel.adjust()
-        self.elements.countLabel = CountLabel(self, self.elements.countLabel)
-
-        #self.elements.feedList.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
-        #self.setLayout(self.elements.verticalLayout)
-        style = """\
-            QScrollBar:vertical  {
-                background: none;
-                background-color: rgb(81, 81, 81);
-                width: 15px;
-            }
-            QScrollBar::handle:vertical  {
-                background: rgb(66, 66, 66);
-                border-radius: 10px;
-                min-height: 20px;
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical  {
-                background: none;
-            }
-            QScrollBar::up-arrow:vertical, QScrollBar::down-arrow:vertical  {
-                background: none;
-            }
-            QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical  {
-                background: none;
-            }
-        """
-        self.elements.feedList.verticalScrollBar().setStyleSheet(style)
-        self.elements.editList.verticalScrollBar().setStyleSheet(style)
-        self.elements.stackedWidget.lower()
+        super().__init__(self, 'resourses' + sep + 'MainForm.ui')
+        self.elements.reloadLabel.setVisible(False)
+        self.elements.reloadLabel.movie = QtGui.QMovie(':/Icons/ajax-loader.gif')
+        self.elements.reloadLabel.setMovie(self.elements.reloadLabel.movie)
+        self.elements.postLabel.setVisible(False)
+        self.elements.postLabel.movie = QtGui.QMovie(':/Icons/ajax-loader.gif')
+        self.elements.postLabel.setMovie(self.elements.postLabel.movie)
+        self.feedList = FeedList(self.elements.feedList, self)
+        self.editList = EditList(self.elements.editList, self, access_token, self.feedList.news)
+        self.feedList.getFeed()
 
     def _set_connections(self):
-        self.connect(self, QtCore.SIGNAL("setStyleSheet(QString, int)"), self.setStyleSheetSignal)
-        self.elements.feedList.verticalScrollBar().valueChanged.connect(self.handle_scrollBarValue)
-        self.elements.nextButton.clicked.connect(self.nextButtonClicked)
+        self.connect(self, QtCore.SIGNAL("feed_loading(bool)"), self.__feed_loading)
+        self.connect(self, QtCore.SIGNAL("edit_posting(bool)"), self.__edit_posting)
 
-    @threaded
-    def post(self):
-        for n, item in enumerate(self.iterateEditItems()):
-            if self.exiting:
-                return
-            widget = self.elements.editList.itemWidget(item)
-            self.emit(QtCore.SIGNAL("setStyleSheet(QString, int)"), "background-color: rgb(148, 205, 255)", n)
-            try:
-                vkpost.post(self.api, self.feed.news[widget.id])
-            except Exception as e:
-                showmessage('Error while posting: ' + str(e))
-                self.emit(QtCore.SIGNAL("setStyleSheet(QString, int)"), "background-color: rgb(255, 117, 112)", n)
-                continue
-            self.emit(QtCore.SIGNAL("setStyleSheet(QString, int)"), "background-color: rgb(161, 255, 144)", n)
-            self.feed.news[widget.id]['posted'] = True
-            self.feed.news[widget.id]['feedwidget'].setPosted()
-            self.elements.countLabel.dec()
-        self.elements.nextButton.setEnabled(True)
+    def __feed_loading(self, state):
+        if state:
+            self.elements.refreshButton.setEnabled(False)
+            self.elements.sendButton.setEnabled(False)
+            self.elements.reloadLabel.setVisible(True)
+            self.elements.reloadLabel.movie.start()
+        else:
+            self.elements.refreshButton.setEnabled(True)
+            self.elements.sendButton.setEnabled(True)
+            self.elements.reloadLabel.setVisible(False)
+            self.elements.reloadLabel.movie.stop()
 
-    def handle_scrollBarValue(self, value):
-        scrollbar = self.elements.feedList.verticalScrollBar()
-        if value != scrollbar.maximum(): return
-        if not self.feed.loading:
-            self.feed.getFeed()
+    def feed_loading(self, state):
+        self.emit(QtCore.SIGNAL("feed_loading(bool)"), state)
 
-    def setStyleSheetSignal(self, style, item_n):
-        self.elements.editList.itemWidget(self.elements.editList.item(item_n)).setStyleSheet(style)
+    def __edit_posting(self, state):
+        if state:
+            self.elements.sendButton.setEnabled(False)
+            self.elements.refreshButton.setEnabled(False)
+            self.elements.postLabel.setVisible(True)
+            self.elements.postLabel.movie.start()
+        else:
+            self.elements.sendButton.setEnabled(True)
+            self.elements.refreshButton.setEnabled(True)
+            self.elements.postLabel.setVisible(False)
+            self.elements.postLabel.movie.stop()
 
-    def nextButtonClicked(self):
-        if self.mode == 'feed':
-            self.mode = 'editing'
-            self.elements.nextButton.setText("Загрузить!")
-            for widget in self.iterateFeedWidgets():
-                if widget.checked():
-                    item = QtGui.QListWidgetItem()
-                    myItem = editListItem(widget.id, item, self)
-                    self.elements.editList.addItem(item)
-                    self.elements.editList.setItemWidget(item, myItem)
-            self.stackedWidget.setCurrentIndex(1)
-            self.elements.nextButton.setEnabled(True)
-            return
-        if self.mode == 'editing':
-            self.elements.nextButton.setEnabled(False)
-            self.post()
-            self.elements.nextButton.setText("<- Назад")
-            self.mode = 'back'
-            return
-        if self.mode == 'back':
-            self.elements.nextButton.setEnabled(False)
-            self.elements.nextButton.setText("-> Далее")
-            self.mode = 'feed'
-            self.elements.editList.clear()
-            self.elements.stackedWidget.setCurrentIndex(0)
-
-    def iterateFeedWidgets(self):
-        for i in range(self.elements.feedList.count()):
-            yield self.elements.feedList.itemWidget(self.elements.feedList.item(i))
-
-    def iterateFeedItems(self):
-        for i in range(self.elements.feedList.count()):
-            yield self.elements.feedList.item(i)
-
-    def iterateEditItems(self):
-        for i in range(self.elements.editList.count()):
-            yield self.elements.editList.item(i)
-
-    def iterateEditWidget(self):
-        for i in range(self.elements.editList.count()):
-            yield self.elements.editList.itemWidget(self.elements.editList.item(i))
-
-    def resizeEvent(self, event):
-        self.elements.gagLabel.adjust()
+    def edit_posting(self, state):
+        self.emit(QtCore.SIGNAL("edit_posting(bool)"), state)
 
     def closeEvent(self, event):
         self.exiting = True
